@@ -1,11 +1,13 @@
 import datetime
+import matplotlib.pyplot as plt
+
 def read_history():
     try:
-        with open("history.txy", "r" ) as file:
+        with open("history.txt", "r") as file:
             return file.readlines()
     except FileNotFoundError:
-        return[]
-    
+        return []
+
 def save_transaction(trans_type, amount, category):
     date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
     with open("history.txt", "a") as file:
@@ -16,6 +18,7 @@ def calculate_balance():
     balance = 0.0
     for line in history:
         parts = line.split("|")
+        if len(parts) < 4: continue
         trans_type = parts[1].strip()
         amount = float(parts[2].strip().replace('$', ''))
         if trans_type == "Income":
@@ -24,33 +27,42 @@ def calculate_balance():
             balance -= amount
     return balance
 
+def show_chart():
+    history = read_history()
+    categories = {}
+    for line in history:
+        parts = line.split("|")
+        if len(parts) < 4: continue
+        trans_type = parts[1].strip()
+        amount = float(parts[2].strip().replace('$', ''))
+        category = parts[3].strip()
+        if trans_type == "Expense":
+            categories[category] = categories.get(category, 0) + amount
+            
+    if not categories:
+        print("\n[!] No expenses to show in chart.")
+        return
+
+    plt.figure(figsize=(8, 6))
+    plt.pie(categories.values(), labels=categories.keys(), autopct='%1.1f%%')
+    plt.title("Expense Distribution")
+    plt.show()
+
 def run_app():
     while True:
         balance = calculate_balance()
-        print(f"\n--- Wallet Dashboard | Balance: ${balance:.2f} ---")
-        print("1. Add Income (+)")
-        print("2. Add Expense (-)")
-        print("3. View History")
-        print("4. Exit")
-
+        print(f"\n--- Balance: ${balance:.2f} ---")
+        print("1. Income | 2. Expense | 3. History | 4. Chart | 5. Exit")
         choice = input("Select: ")
-
         if choice in ["1", "2"]:
-            try:
-                amount = float(input("Amount: "))
-                category = input("Category: ")
-                trans_type = "Income" if choice == "1" else "Expense"
-                save_transaction(trans_type, amount, category)
-                print(f"Success!")
-            except ValueError:
-                print("Error: Enter a valid number.")
+            amount = float(input("Amount: "))
+            category = input("Category: ")
+            save_transaction("Income" if choice == "1" else "Expense", amount, category)
         elif choice == "3":
-            print("\n-- History ---")
-            history = read_history()
-            for record in history:
-                print(record.strip())
+            for r in read_history(): print(r.strip())
         elif choice == "4":
-            print("Googbye!")
+            show_chart()
+        elif choice == "5":
             break
 
 if __name__ == "__main__":
