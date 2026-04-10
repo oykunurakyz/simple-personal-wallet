@@ -16,3 +16,8 @@ A simple Python wallet tracker for daily expenses. This is my first Python proje
 1. Download `wallet.py`.
 2. Run it in your terminal using: `python wallet.py`
 3. Follow the menu to manage your money!
+
+
+Added Data Visualization: View your expenses in a colorful pie chart.
+
+Library used: Matplotlib.
